@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Animation Studio PRO - Gravação HD</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #c20000; border-radius: 4px; }
+
+        .header {
+            background: #1a1a1a;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+        }
+        .logo { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: #c20000; }
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        
+        .instagram-credit {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 11px;
+            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+        .instagram-credit:hover { color: #c20000; }
+        
+        button {
+            background: #252525;
+            border: none;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        button:hover { background: #353535; transform: translateY(-1px); }
+        button.primary { background: #c20000; }
+        button.primary:hover { background: #a00000; }
+        button.recording { background: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        .main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+        
+        .layers-panel {
+            width: 260px;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .layers-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #333;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            background: #1a1a1a;
+        }
+        .layers-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .layer-item {
+            background: #252525;
+            border-radius: 6px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid #333;
+        }
+        .layer-item:hover { background: #2f2f2f; }
+        .layer-item.selected { background: #c20000; border-color: #c20000; }
+        .layer-visibility {
+            cursor: pointer;
+            width: 24px;
+            color: #aaa;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .layer-name {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .edit-layer-btn {
+            background: transparent;
+            padding: 2px 6px;
+            margin: 0;
+            width: auto;
+            opacity: 0.6;
+        }
+        .edit-layer-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); transform: none; }
+        .layer-delete {
+            opacity: 0.6;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .layer-delete:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+        
+        .add-layer-btn {
+            margin: 12px;
+            padding: 10px;
+            background: #252525;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #e0e0e0;
+        }
+        .add-layer-btn:hover { background: #353535; transform: translateY(-1px); }
+
+        .props-panel {
+            width: 280px;
+            background: #1a1a1a;
+            border-left: 1px solid #333;
+            padding: 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+            margin-top: 16px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-title:first-of-type { margin-top: 0; }
+        
+        .property {
+            background: #252525;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .property-left { display: flex; align-items: center; gap: 8px; }
+        .property:hover { background: #2f2f2f; }
+        .property.active { background: #c20000; }
+        .easing-selector {
+            font-size: 10px;
+            background: #3a3a3a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .curve-preview {
+            background: #252525;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+        #curveCanvas { width: 100%; height: 50px; background: #1a1a1a; border-radius: 4px; display: block; }
+        
+        .slider-control { margin: 12px 0; }
+        .slider-control label { font-size: 11px; color: #bbb; display: block; margin-bottom: 5px; }
+        input[type="range"] { width: 100%; accent-color: #c20000; cursor: pointer; }
+        .value-display { font-size: 10px; color: #c20000; text-align: right; margin-top: 3px; }
+        
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .color-input-wrapper label { font-size: 11px; color: #bbb; flex: 1; }
+        input[type="color"] { width: 30px; height: 30px; background: #252525; border: 1px solid #444; border-radius: 4px; cursor: pointer; padding: 2px; }
+        
+        .action-buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .action-buttons-group button {
+            width: 100%;
+            justify-content: flex-start;
+            font-size: 12px;
+            padding: 8px 12px;
+            background: #252525;
+        }
+        .action-buttons-group button:hover { background: #353535; }
+
+        .viewer {
+            flex: 1;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+            perspective: 1200px;
+        }
+        
+        .layers-stage {
+            width: 70%;
+            height: 70%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        .layer-object {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            will-change: transform;
+            cursor: move;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .layer-object video,
+        .layer-object img,
+        .layer-object canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: block;
+        }
+        
+        .recording-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #ef4444;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            animation: pulse 1s infinite;
+            z-index: 100;
+        }
+
+        .timeline-area {
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 10px 16px;
+            flex-shrink: 0;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .timeline-label { font-size: 12px; color: #ffffff; font-weight: 500; }
+        .timeline-tools { display: flex; gap: 8px; }
+        .timeline-tools button { padding: 4px 12px; font-size: 11px; }
+        .time-display { font-family: monospace; font-size: 12px; background: #0a0a0a; padding: 4px 12px; border-radius: 6px; }
+        .timeline-track {
+            background: #0a0a0a;
+            border-radius: 6px;
+            height: 50px;
+            position: relative;
+            border: 1px solid #333;
+            margin: 8px 0;
+            cursor: pointer;
+            overflow-x: auto;
+        }
+        #timelineTrackInner {
+            position: relative;
+            height: 50px;
+            min-width: 100%;
+        }
+        .keyframe-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #c20000;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+            transition: all 0.1s;
+        }
+        .keyframe-marker:hover { width: 14px; height: 14px; background: #ff4444; }
+        .keyframe-marker.selected { width: 14px; height: 14px; border: 2px solid white; background: #ffaa00; }
+        .playhead-line {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: #ffaa00;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .timeline-slider-container { margin-top: 8px; }
+        #timelineSlider { width: 100%; accent-color: #c20000; height: 4px; cursor: pointer; }
+        
+        .toast-menu {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: #252525;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            animation: slideUp 0.2s ease;
+        }
+        .toast-menu button {
+            background: #2a2a2a;
+            padding: 8px 20px;
+            margin: 0;
+            border-radius: 4px;
+            white-space: nowrap;
+            justify-content: flex-start;
+        }
+        .toast-menu button:hover { background: #c20000; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .duration-control { display: flex; gap: 10px; margin: 10px 0; }
+        .duration-control input { background: #0a0a0a; border: 1px solid #c20000; padding: 6px; border-radius: 6px; color: white; width: 80px; }
+        
+        select.font-select {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            padding: 8px;
+            width: 100%;
+            font-size: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .quality-select {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            padding: 6px 10px;
+            width: 100%;
+            font-size: 11px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo"><i data-lucide="clapperboard" style="color: #c20000;"></i> ANIMATION <span>STUDIO PRO</span></div>
+    <div class="btn-group">
+        <a href="https://www.instagram.com/dicarvalho.prof/" target="_blank" class="instagram-credit">
+            <i data-lucide="instagram" style="width: 14px; height: 14px;"></i> Desenvolvido por @dicarvalho.prof | siga-nos
+        </a>
+        <button id="recordScreenBtn" class="primary"><i data-lucide="monitor"></i> Gravar Tela</button>
+        <button id="settingsBtn"><i data-lucide="settings"></i></button>
+    </div>
+</div>
+
+<div class="main">
+    <div class="layers-panel">
+        <div class="layers-header">
+            <span><i data-lucide="layers"></i> CAMADAS</span>
+            <span id="layerCount">0</span>
+        </div>
+        <div class="layers-list" id="layersList"></div>
+        <div class="add-layer-btn" id="addLayerBtn">
+            <i data-lucide="plus"></i> Nova Camada
+        </div>
+    </div>
+    
+    <div class="viewer" id="viewer">
+        <div class="layers-stage" id="layersStage"></div>
+        <div class="recording-badge" id="recordingBadge">● RECORDING</div>
+    </div>
+    
+    <div class="props-panel" id="propsPanel">
+        <div class="section-title"><i data-lucide="sliders"></i> PROPRIEDADES</div>
+        <div id="propList">
+            <div class="property active" data-prop="position">
+                <div class="property-left"><i data-lucide="move"></i> <span>Posição (X,Y)</span></div>
+                <select class="easing-selector" data-prop="position"><option value="linear">Linear</option><option value="power1.inOut" selected>Ease</option><option value="bounce.out">Bounce</option><option value="elastic.out">Elastic</option></select>
+            </div>
+            <div class="property" data-prop="scale">
+                <div class="property-left"><i data-lucide="maximize"></i> <span>Escala (X,Y)</span></div>
+                <select class="easing-selector" data-prop="scale"><option value="linear">Linear</option><option value="bounce.out" selected>Bounce</option><option value="elastic.out">Elastic</option></select>
+            </div>
+            <div class="property" data-prop="rotation">
+                <div class="property-left"><i data-lucide="rotate-cw"></i> <span>Rotação Z</span></div>
+                <select class="easing-selector" data-prop="rotation"><option value="linear">Linear</option><option value="power1.inOut" selected>Ease</option><option value="elastic.out">Elastic</option></select>
+            </div>
+            <div class="property" data-prop="perspective">
+                <div class="property-left"><i data-lucide="box"></i> <span>Perspectiva 3D</span></div>
+                <select class="easing-selector" data-prop="perspective"><option value="linear">Linear</option><option value="power2.inOut" selected>Smooth</option></select>
+            </div>
+            <div class="property" data-prop="opacity">
+                <div class="property-left"><i data-lucide="eye"></i> <span>Opacidade</span></div>
+                <select class="easing-selector" data-prop="opacity"><option value="linear">Linear</option><option value="power1.inOut" selected>Fade</option></select>
+            </div>
+        </div>
+        
+        <div class="section-title"><i data-lucide="palette"></i> CORES</div>
+        <div class="color-input-wrapper">
+            <label>Cor do Elemento</label>
+            <input type="color" id="elementColor" value="#c20000">
+        </div>
+        <div class="color-input-wrapper" id="bgColorWrapper">
+            <label>Cor de Fundo</label>
+            <input type="color" id="bgColor" value="#0a0a0a">
+        </div>
+        
+        <div id="textEditArea" style="display:none; margin-bottom: 12px;">
+            <label style="font-size:11px; color:#bbb; display:block; margin-bottom:5px;">Conteúdo do Texto</label>
+            <input type="text" id="layerText" style="width:100%; background:#252525; border:1px solid #444; padding:8px; border-radius:6px; color:white; font-size:12px;">
+            
+            <label style="font-size:11px; color:#bbb; display:block; margin-top:12px; margin-bottom:5px;">Fonte (Google Fonts)</label>
+            <select id="fontSelect" class="font-select">
+                <option value="'Segoe UI', sans-serif">Padrão (Segoe UI)</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
+                <option value="'Inter', sans-serif">Inter</option>
+            </select>
+        </div>
+        
+        <div class="section-title"><i data-lucide="clock"></i> DURAÇÃO</div>
+        <div class="slider-control">
+            <label>Segundos: <span id="durationValue">5.00</span></label>
+            <input type="range" id="durationSlider" min="1" max="30" step="0.5" value="5">
+        </div>
+        
+        <div class="section-title"><i data-lucide="chart-line"></i> CURVA DE EASING</div>
+        <div class="curve-preview"><canvas id="curveCanvas" width="200" height="50"></canvas></div>
+        
+        <div class="section-title"><i data-lucide="video"></i> EXPORTAÇÃO</div>
+        <div style="margin-bottom: 12px; background: #252525; padding: 10px; border-radius: 6px;">
+            <p style="font-size:11px; color:#bbb; margin-bottom:8px;">
+                <i data-lucide="info"></i> A gravação captura exatamente o que você vê na tela.
+            </p>
+            <label style="font-size:11px; color:#bbb; display:block; margin-bottom:5px;">Qualidade da Gravação:</label>
+            <select id="qualitySelect" class="quality-select">
+                <option value="high">Alta (1920x1080, 8 Mbps, 60fps)</option>
+                <option value="medium" selected>Média (1280x720, 4 Mbps, 30fps)</option>
+                <option value="low">Baixa (854x480, 2 Mbps, 30fps)</option>
+            </select>
+            <p style="font-size:11px; color:#888; margin-top:8px;">
+                Clique em "Gravar Tela", selecione a aba atual e clique em "Compartilhar".
+                Para parar, clique novamente no botão "Parar Gravação".
+            </p>
+        </div>
+        
+        <div class="action-buttons-group">
+            <button id="addKeyframeBtn"><i data-lucide="plus-circle"></i> Adicionar Keyframe</button>
+            <button id="updateKeyframeBtn"><i data-lucide="refresh-cw"></i> Atualizar Keyframe</button>
+            <button id="removeKeyframeBtn"><i data-lucide="trash-2"></i> Remover Keyframe</button>
+            <button id="clearKeyframesBtn"><i data-lucide="x-circle"></i> Limpar Todos Keyframes</button>
+        </div>
+    </div>
+</div>
+
+<div class="timeline-area">
+    <div class="timeline-header">
+        <div class="timeline-label"><span id="selectedLayerName">Nenhuma camada selecionada</span></div>
+        <div class="timeline-tools">
+            <button id="playPauseBtn" class="primary"><i data-lucide="play"></i> Play</button>
+        </div>
+        <div class="time-display"><span id="currentTimeDisplay">0:00.00</span> / <span id="totalDuration">5.00</span>s</div>
+    </div>
+    <div class="timeline-track" id="timelineTrack">
+        <div id="timelineTrackInner"><div class="playhead-line" id="playheadLine"></div></div>
+    </div>
+    <div class="timeline-slider-container">
+        <input type="range" id="timelineSlider" min="0" max="100" step="0.05" value="0">
+    </div>
+</div>
+
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:12px;">Configurações</h3>
+        <div class="duration-control">
+            <label>Duração (segundos):</label>
+            <input type="number" id="modalDurationSec" min="1" max="30" step="0.5" value="5">
+        </div>
+        <div class="color-input-wrapper">
+            <label>Cor de Fundo</label>
+            <input type="color" id="modalBgColor" value="#0a0a0a">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <label><input type="radio" name="modalBgType" id="modalBgSolid" checked> Sólido</label>
+            <label><input type="radio" name="modalBgType" id="modalBgTransparent"> Transparente</label>
+        </div>
+        <button id="applySettingsBtn" style="margin-top:12px; background:#c20000;">Aplicar</button>
+        <button id="closeSettingsBtn" style="margin-top:6px;">Fechar</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    // ==================== LAYER CLASS COM KEYFRAMES CORRIGIDOS ====================
+    class Layer {
+        constructor(id, name, type) {
+            this.id = id;
+            this.name = name;
+            this.type = type;
+            this.visible = true;
+            this.color = '#c20000';
+            this.text = 'Duplo clique para editar';
+            this.fontFamily = "'Segoe UI', sans-serif";
+            this.element = null;
+            this.elementType = null;
+            
+            this.x = 0, this.y = 0;
+            this.scaleX = 1, this.scaleY = 1;
+            this.rotation = 0;
+            this.rotateX = 0, this.rotateY = 0, this.translateZ = 0;
+            this.opacity = 1;
+            
+            this.keyframes = { position: [], scale: [], rotation: [], perspective: [], opacity: [] };
+            this.easings = { position: 'power1.inOut', scale: 'bounce.out', rotation: 'power1.inOut', perspective: 'power2.inOut', opacity: 'power1.inOut' };
+        }
+        
+        _clone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+        
+        getCurrentValue(property) {
+            if (property === 'position') return { x: this.x, y: this.y };
+            if (property === 'scale') return { x: this.scaleX, y: this.scaleY };
+            if (property === 'rotation') return this.rotation;
+            if (property === 'perspective') return { rx: this.rotateX, ry: this.rotateY, tz: this.translateZ };
+            if (property === 'opacity') return this.opacity;
+            return null;
+        }
+        
+        addKeyframe(property, time, currentValue) {
+            let value = this._clone(currentValue);
+            this.keyframes[property] = this.keyframes[property].filter(k => Math.abs(k.time - time) > 0.02);
+            this.keyframes[property].push({ id: Date.now() + Math.random(), time: time, value: value });
+            this.keyframes[property].sort((a,b) => a.time - b.time);
+        }
+        
+        updateKeyframe(property, keyframeId, newValue) {
+            let kf = this.keyframes[property].find(k => k.id === keyframeId);
+            if (kf) {
+                kf.value = this._clone(newValue);
+                return true;
+            }
+            return false;
+        }
+        
+        removeKeyframe(property, keyframeId) {
+            this.keyframes[property] = this.keyframes[property].filter(k => k.id !== keyframeId);
+        }
+        
+        clearKeyframes(property) {
+            this.keyframes[property] = [];
+        }
+        
+        getValueAtTime(property, time, duration) {
+            let kfs = [...this.keyframes[property]].sort((a,b) => a.time - b.time);
+            
+            if (kfs.length === 0) {
+                return this._clone(this.getCurrentValue(property));
+            }
+            
+            if (kfs.length === 1) {
+                return this._clone(kfs[0].value);
+            }
+            
+            let prev = null, next = null;
+            for (let i = 0; i < kfs.length; i++) {
+                if (kfs[i].time <= time + 0.001) prev = kfs[i];
+                if (kfs[i].time > time && next === null) next = kfs[i];
+            }
+            
+            if (prev && !next) return this._clone(prev.value);
+            if (!prev && next) return this._clone(next.value);
+            
+            if (prev && next) {
+                let t = (time - prev.time) / (next.time - prev.time);
+                let eased = this.getEasedValue(t, this.easings[property]);
+                let interpolated = this.interpolate(eased, prev.value, next.value);
+                return this._clone(interpolated);
+            }
+            
+            return this._clone(this.getCurrentValue(property));
+        }
+        
+        getEasedValue(t, easing) {
+            try { return gsap.parseEase(easing)(t); } catch(e) { return t; }
+        }
+        
+        interpolate(t, from, to) {
+            if (typeof from === 'object') {
+                let res = {};
+                for (let k in from) {
+                    res[k] = from[k] + (to[k] - from[k]) * t;
+                }
+                return res;
+            }
+            return from + (to - from) * t;
+        }
+        
+        updateFromTime(time, duration) {
+            let pos = this.getValueAtTime('position', time, duration);
+            if (pos) { this.x = pos.x; this.y = pos.y; }
+            
+            let sc = this.getValueAtTime('scale', time, duration);
+            if (sc) { this.scaleX = sc.x; this.scaleY = sc.y; }
+            
+            let rot = this.getValueAtTime('rotation', time, duration);
+            if (rot !== undefined) this.rotation = rot;
+            
+            let persp = this.getValueAtTime('perspective', time, duration);
+            if (persp) { 
+                this.rotateX = persp.rx; 
+                this.rotateY = persp.ry; 
+                this.translateZ = persp.tz; 
+            }
+            
+            let op = this.getValueAtTime('opacity', time, duration);
+            if (op !== undefined) this.opacity = op;
+            
+            this.updateTransform();
+        }
+        
+        updateTransform() {
+            if (!this.element) return;
+            let transform = `translate(${this.x}px, ${this.y}px) `;
+            if (this.rotateX !== 0) transform += `rotateX(${this.rotateX}deg) `;
+            if (this.rotateY !== 0) transform += `rotateY(${this.rotateY}deg) `;
+            if (this.rotation !== 0) transform += `rotate(${this.rotation}deg) `;
+            if (this.translateZ !== 0) transform += `translateZ(${this.translateZ}px) `;
+            if (this.scaleX !== 1 || this.scaleY !== 1) transform += `scale(${this.scaleX}, ${this.scaleY}) `;
+            this.element.style.transform = transform;
+            this.element.style.opacity = this.opacity;
+            this.element.style.display = this.visible ? 'block' : 'none';
+        }
+        
+        createTextElement() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 200;
+            this.element = canvas;
+            this.elementType = 'canvas';
+            this.updateTextContent();
+            return canvas;
+        }
+        
+        updateTextContent() {
+            if (this.elementType === 'canvas') {
+                const ctx = this.element.getContext('2d');
+                const w = this.element.width;
+                const h = this.element.height;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = this.color;
+                ctx.font = `bold 36px ${this.fontFamily}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const words = this.text.split('');
+                let lines = [];
+                let currentLine = '';
+                for (let i = 0; i < words.length; i++) {
+                    let testLine = currentLine + words[i];
+                    ctx.font = `bold 36px ${this.fontFamily}`;
+                    let metrics = ctx.measureText(testLine);
+                    if (metrics.width > w - 40 && currentLine.length > 0) {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                lines.push(currentLine);
+                
+                const lineHeight = 42;
+                const startY = (h - (lines.length * lineHeight)) / 2;
+                for (let i = 0; i < lines.length; i++) {
+                    ctx.fillText(lines[i], w/2, startY + i * lineHeight);
+                }
+            }
+            this.updateTransform();
+        }
+        
+        updateColor() {
+            if (this.elementType === 'canvas') this.updateTextContent();
+        }
+    }
+    
+    // ==================== GLOBAL STATE ====================
+    let layers = [];
+    let nextId = 1;
+    let selectedLayerId = null;
+    let currentTime = 0;
+    let duration = 5;
+    let isPlaying = false;
+    let animationFrame = null;
+    let selectedProperty = 'position';
+    let selectedKeyframeId = null;
+    let bgSolid = true;
+    let bgColorValue = '#0a0a0a';
+    let isDragging = false;
+    let dragStartX = 0, dragStartY = 0;
+    let dragLayerStartX = 0, dragLayerStartY = 0;
+    let dragTargetLayer = null;
+    
+    const layersStage = document.getElementById('layersStage');
+    const viewer = document.getElementById('viewer');
+    
+    function updateBackground() {
+        if (bgSolid) viewer.style.backgroundColor = bgColorValue;
+        else viewer.style.backgroundColor = 'transparent';
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function renderLayersList() {
+        const container = document.getElementById('layersList');
+        container.innerHTML = '';
+        layers.forEach(layer => {
+            const div = document.createElement('div');
+            div.className = `layer-item ${selectedLayerId === layer.id ? 'selected' : ''}`;
+            div.innerHTML = `
+                <div class="layer-visibility"><i data-lucide="${layer.visible ? 'eye' : 'eye-off'}" style="width:14px;"></i></div>
+                <div class="layer-name" data-id="${layer.id}">${escapeHtml(layer.name)}</div>
+                <button class="edit-layer-btn" title="Renomear"><i data-lucide="pencil" style="width:12px;"></i></button>
+                <div class="layer-delete"><i data-lucide="trash-2" style="width:14px;"></i></div>
+            `;
+            
+            div.querySelector('.edit-layer-btn').onclick = (e) => {
+                e.stopPropagation();
+                const newName = prompt('Novo nome da camada:', layer.name);
+                if (newName && newName.trim()) {
+                    layer.name = newName.trim();
+                    renderLayersList();
+                    if (selectedLayerId === layer.id) {
+                        document.getElementById('selectedLayerName').innerText = layer.name;
+                    }
+                }
+            };
+            
+            div.querySelector('.layer-visibility').onclick = (e) => {
+                e.stopPropagation();
+                layer.visible = !layer.visible;
+                layer.updateTransform();
+                renderLayersList();
+            };
+            div.querySelector('.layer-delete').onclick = (e) => {
+                e.stopPropagation();
+                if (layer.element && layer.elementType === 'video') layer.element.pause();
+                layers = layers.filter(l => l.id !== layer.id);
+                if (layer.element) layer.element.remove();
+                if (selectedLayerId === layer.id) selectedLayerId = layers.length > 0 ? layers[0].id : null;
+                renderLayersList();
+                updateStage();
+                updateAllLayersFromTime();
+            };
+            div.onclick = () => {
+                selectedLayerId = layer.id;
+                selectedKeyframeId = null;
+                renderLayersList();
+                updateAllLayersFromTime();
+                drawCurvePreview();
+                document.getElementById('selectedLayerName').innerText = layer.name;
+                document.getElementById('elementColor').value = layer.color;
+                if (layer.type === 'text') {
+                    document.getElementById('textEditArea').style.display = 'block';
+                    document.getElementById('layerText').value = layer.text;
+                    document.getElementById('fontSelect').value = layer.fontFamily;
+                } else {
+                    document.getElementById('textEditArea').style.display = 'none';
+                }
+                updatePropertySliders();
+                updateTimelineKeyframes();
+            };
+            container.appendChild(div);
+        });
+        document.getElementById('layerCount').innerText = layers.length;
+        lucide.createIcons();
+    }
+    
+    function updateStage() {
+        layersStage.innerHTML = '';
+        for (let layer of layers) {
+            if (layer.element) {
+                layer.element.className = 'layer-object';
+                layersStage.appendChild(layer.element);
+                layer.updateTransform();
+                if (layer.elementType === 'video' && layer.element.paused) {
+                    layer.element.play().catch(e => console.log('Vídeo aguardando interação'));
+                }
+            }
+        }
+    }
+    
+    function addTextLayer() {
+        const layer = new Layer(nextId++, `Texto ${nextId-1}`, 'text');
+        layer.createTextElement();
+        layers.push(layer);
+        if (layers.length === 1) selectedLayerId = layer.id;
+        renderLayersList();
+        updateStage();
+        updateAllLayersFromTime();
+        drawCurvePreview();
+    }
+    
+    function importMedia() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*,video/mp4,video/webm,image/gif';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            const layer = new Layer(nextId++, `Mídia ${nextId-1}`, 'media');
+            
+            if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = url;
+                video.loop = true;
+                video.muted = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '100%';
+                video.style.borderRadius = '12px';
+                video.style.display = 'block';
+                video.load();
+                video.play().catch(err => console.log('Autoplay:', err));
+                layer.element = video;
+                layer.elementType = 'video';
+            } else {
+                const img = new Image();
+                img.src = url;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.borderRadius = '12px';
+                img.style.display = 'block';
+                img.onload = () => {
+                    layer.element = img;
+                    layer.elementType = 'img';
+                    updateStage();
+                    layer.updateTransform();
+                    renderLayersList();
+                };
+                layer.element = img;
+                layer.elementType = 'img';
+            }
+            
+            layers.push(layer);
+            if (layers.length === 1) selectedLayerId = layer.id;
+            updateStage();
+            renderLayersList();
+            updateAllLayersFromTime();
+            drawCurvePreview();
+            selectedLayerId = layer.id;
+            renderLayersList();
+            updatePropertySliders();
+            document.getElementById('selectedLayerName').innerText = layer.name;
+        };
+        input.click();
+    }
+    
+    function getMousePos(e) {
+        const rect = layersStage.getBoundingClientRect();
+        const stageWidth = layersStage.clientWidth;
+        const stageHeight = layersStage.clientHeight;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        const x = (clientX - rect.left) - stageWidth/2;
+        const y = (clientY - rect.top) - stageHeight/2;
+        return { x, y };
+    }
+    
+    function onMouseDown(e) {
+        if (e.target !== layersStage && !layersStage.contains(e.target)) return;
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer) return;
+        e.preventDefault();
+        isDragging = true;
+        dragTargetLayer = layer;
+        dragLayerStartX = layer.x;
+        dragLayerStartY = layer.y;
+        const pos = getMousePos(e);
+        dragStartX = pos.x;
+        dragStartY = pos.y;
+    }
+    
+    function onMouseMove(e) {
+        if (!isDragging || !dragTargetLayer) return;
+        e.preventDefault();
+        const pos = getMousePos(e);
+        dragTargetLayer.x = dragLayerStartX + (pos.x - dragStartX);
+        dragTargetLayer.y = dragLayerStartY + (pos.y - dragStartY);
+        dragTargetLayer.updateTransform();
+        if (selectedProperty === 'position' && selectedLayerId === dragTargetLayer.id) {
+            document.getElementById('posXVal') && (document.getElementById('posXVal').innerText = Math.round(dragTargetLayer.x));
+            document.getElementById('posYVal') && (document.getElementById('posYVal').innerText = Math.round(dragTargetLayer.y));
+            document.getElementById('posX') && (document.getElementById('posX').value = dragTargetLayer.x);
+            document.getElementById('posY') && (document.getElementById('posY').value = dragTargetLayer.y);
+        }
+    }
+    
+    function onMouseUp() {
+        isDragging = false;
+        dragTargetLayer = null;
+    }
+    
+    layersStage.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    
+    layersStage.addEventListener('dblclick', (e) => {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (layer && layer.type === 'text') {
+            const newText = prompt('Editar texto:', layer.text);
+            if (newText !== null) {
+                layer.text = newText;
+                layer.updateTextContent();
+                if (selectedLayerId === layer.id) document.getElementById('layerText').value = layer.text;
+            }
+        }
+    });
+    
+    function updateAllLayersFromTime() {
+        for (let layer of layers) layer.updateFromTime(currentTime, duration);
+        updateUI();
+        updateTimelineKeyframes();
+        updatePropertySliders();
+    }
+    
+    function updateUI() {
+        const percent = (currentTime / duration) * 100;
+        document.getElementById('timelineSlider').value = percent;
+        const mins = Math.floor(currentTime / 60);
+        const secs = Math.floor(currentTime % 60);
+        const ms = Math.floor((currentTime % 1) * 100);
+        document.getElementById('currentTimeDisplay').innerText = `${mins}:${secs.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
+        document.getElementById('totalDuration').innerText = duration.toFixed(2);
+        document.getElementById('durationValue').innerText = duration.toFixed(2);
+        const trackWidth = document.getElementById('timelineTrackInner').clientWidth;
+        if (trackWidth > 0) document.getElementById('playheadLine').style.left = `${(currentTime / duration) * trackWidth}px`;
+    }
+    
+    function updateTimelineKeyframes() {
+        const container = document.getElementById('timelineTrackInner');
+        const existing = container.querySelectorAll('.keyframe-marker');
+        existing.forEach(el => el.remove());
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer || !layer.keyframes[selectedProperty]) return;
+        const trackWidth = container.clientWidth;
+        if (trackWidth === 0) return;
+        layer.keyframes[selectedProperty].forEach(kf => {
+            const marker = document.createElement('div');
+            marker.className = 'keyframe-marker';
+            if (selectedKeyframeId === kf.id) marker.classList.add('selected');
+            marker.style.left = `${(kf.time / duration) * trackWidth}px`;
+            marker.onclick = (e) => {
+                e.stopPropagation();
+                selectedKeyframeId = kf.id;
+                currentTime = kf.time;
+                updateAllLayersFromTime();
+                updateTimelineKeyframes();
+            };
+            container.appendChild(marker);
+        });
+    }
+    
+    function updatePropertySliders() {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer) return;
+        const container = document.getElementById('propertyControls');
+        if (!container) {
+            const newDiv = document.createElement('div');
+            newDiv.id = 'propertyControls';
+            document.getElementById('propList').after(newDiv);
+        }
+        const controlsDiv = document.getElementById('propertyControls');
+        
+        if (selectedProperty === 'position') {
+            controlsDiv.innerHTML = `
+                <div class="slider-control"><label>Posição X: <span id="posXVal">${Math.round(layer.x)}</span></label><input type="range" id="posX" min="-400" max="400" step="1" value="${layer.x}"></div>
+                <div class="slider-control"><label>Posição Y: <span id="posYVal">${Math.round(layer.y)}</span></label><input type="range" id="posY" min="-400" max="400" step="1" value="${layer.y}"></div>
+            `;
+            document.getElementById('posX')?.addEventListener('input', (e) => { layer.x = parseInt(e.target.value); document.getElementById('posXVal').innerText = layer.x; layer.updateTransform(); });
+            document.getElementById('posY')?.addEventListener('input', (e) => { layer.y = parseInt(e.target.value); document.getElementById('posYVal').innerText = layer.y; layer.updateTransform(); });
+        } else if (selectedProperty === 'scale') {
+            controlsDiv.innerHTML = `
+                <div class="slider-control"><label>Escala X: ${layer.scaleX.toFixed(2)}</label><input type="range" id="scaleX" min="0.2" max="3" step="0.01" value="${layer.scaleX}"></div>
+                <div class="slider-control"><label>Escala Y: ${layer.scaleY.toFixed(2)}</label><input type="range" id="scaleY" min="0.2" max="3" step="0.01" value="${layer.scaleY}"></div>
+            `;
+            document.getElementById('scaleX')?.addEventListener('input', (e) => { layer.scaleX = parseFloat(e.target.value); layer.updateTransform(); });
+            document.getElementById('scaleY')?.addEventListener('input', (e) => { layer.scaleY = parseFloat(e.target.value); layer.updateTransform(); });
+        } else if (selectedProperty === 'rotation') {
+            controlsDiv.innerHTML = `<div class="slider-control"><label>Rotação Z: ${layer.rotation}°</label><input type="range" id="rotation" min="-360" max="360" step="1" value="${layer.rotation}"></div>`;
+            document.getElementById('rotation')?.addEventListener('input', (e) => { layer.rotation = parseInt(e.target.value); layer.updateTransform(); });
+        } else if (selectedProperty === 'perspective') {
+            controlsDiv.innerHTML = `
+                <div class="slider-control"><label>Rotate X (3D): ${layer.rotateX}°</label><input type="range" id="rotateX" min="-180" max="180" step="1" value="${layer.rotateX}"></div>
+                <div class="slider-control"><label>Rotate Y (3D): ${layer.rotateY}°</label><input type="range" id="rotateY" min="-180" max="180" step="1" value="${layer.rotateY}"></div>
+                <div class="slider-control"><label>Profundidade Z: ${layer.translateZ}px</label><input type="range" id="translateZ" min="-300" max="300" step="5" value="${layer.translateZ}"></div>
+            `;
+            document.getElementById('rotateX')?.addEventListener('input', (e) => { layer.rotateX = parseInt(e.target.value); layer.updateTransform(); });
+            document.getElementById('rotateY')?.addEventListener('input', (e) => { layer.rotateY = parseInt(e.target.value); layer.updateTransform(); });
+            document.getElementById('translateZ')?.addEventListener('input', (e) => { layer.translateZ = parseInt(e.target.value); layer.updateTransform(); });
+        } else if (selectedProperty === 'opacity') {
+            controlsDiv.innerHTML = `<div class="slider-control"><label>Opacidade: ${Math.round(layer.opacity * 100)}%</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="${layer.opacity}"></div>`;
+            document.getElementById('opacity')?.addEventListener('input', (e) => { layer.opacity = parseFloat(e.target.value); layer.updateTransform(); });
+        }
+    }
+    
+    function drawCurvePreview() {
+        const canvas = document.getElementById('curveCanvas');
+        if (!canvas) return;
+        const c = canvas.getContext('2d');
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        canvas.width = w;
+        canvas.height = h;
+        c.clearRect(0, 0, w, h);
+        c.strokeStyle = '#c20000';
+        c.lineWidth = 2;
+        c.beginPath();
+        const layer = layers.find(l => l.id === selectedLayerId);
+        const easing = layer ? layer.easings[selectedProperty] : 'power1.inOut';
+        for (let i = 0; i <= 100; i++) {
+            const t = i / 100;
+            const eased = gsap.parseEase(easing)(t);
+            const x = t * w;
+            const y = h - (eased * h);
+            if (i === 0) c.moveTo(x, y);
+            else c.lineTo(x, y);
+        }
+        c.stroke();
+    }
+    
+    let toastMenu = null;
+    function showLayerMenu() {
+        if (toastMenu) toastMenu.remove();
+        toastMenu = document.createElement('div');
+        toastMenu.className = 'toast-menu';
+        toastMenu.innerHTML = `
+            <button id="toastTextBtn"><i data-lucide="type"></i> Adicionar Texto</button>
+            <button id="toastMediaBtn"><i data-lucide="image"></i> Importar Mídia</button>
+        `;
+        document.body.appendChild(toastMenu);
+        lucide.createIcons();
+        document.getElementById('toastTextBtn').onclick = () => { addTextLayer(); toastMenu.remove(); toastMenu = null; };
+        document.getElementById('toastMediaBtn').onclick = () => { importMedia(); toastMenu.remove(); toastMenu = null; };
+        setTimeout(() => { if (toastMenu) toastMenu.remove(); toastMenu = null; }, 5000);
+    }
+    
+    function startAnimation() {
+        if (isPlaying) return;
+        isPlaying = true;
+        const startTime = performance.now() / 1000;
+        const startCurrent = currentTime;
+        function animate() {
+            if (!isPlaying) return;
+            const now = performance.now() / 1000;
+            let elapsed = now - startTime;
+            let newTime = startCurrent + elapsed;
+            if (newTime >= duration) { newTime = 0; startCurrent = 0; startTime = now; }
+            currentTime = newTime;
+            updateAllLayersFromTime();
+            animationFrame = requestAnimationFrame(animate);
+        }
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(animate);
+        document.getElementById('playPauseBtn').innerHTML = '<i data-lucide="pause"></i> Pause';
+        lucide.createIcons();
+    }
+    
+    function stopAnimation() {
+        isPlaying = false;
+        if (animationFrame) { cancelAnimationFrame(animationFrame); animationFrame = null; }
+        document.getElementById('playPauseBtn').innerHTML = '<i data-lucide="play"></i> Play';
+        lucide.createIcons();
+    }
+    
+    function togglePlayPause() {
+        if (isPlaying) stopAnimation();
+        else startAnimation();
+    }
+    
+    function addKeyframe() {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer) return;
+        let currentValue = layer.getCurrentValue(selectedProperty);
+        if (currentValue) {
+            layer.addKeyframe(selectedProperty, currentTime, currentValue);
+            updateTimelineKeyframes();
+            const btn = document.getElementById('addKeyframeBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check"></i> Adicionado!';
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = originalText; lucide.createIcons(); }, 1000);
+        }
+    }
+    
+    function updateKeyframe() {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer || !selectedKeyframeId) return;
+        let currentValue = layer.getCurrentValue(selectedProperty);
+        if (currentValue) {
+            layer.updateKeyframe(selectedProperty, selectedKeyframeId, currentValue);
+            updateTimelineKeyframes();
+            updateAllLayersFromTime();
+            const btn = document.getElementById('updateKeyframeBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check"></i> Atualizado!';
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = originalText; lucide.createIcons(); }, 1000);
+        }
+    }
+    
+    function removeKeyframe() {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer || !selectedKeyframeId) return;
+        layer.removeKeyframe(selectedProperty, selectedKeyframeId);
+        selectedKeyframeId = null;
+        updateTimelineKeyframes();
+        updateAllLayersFromTime();
+    }
+    
+    function clearAllKeyframes() {
+        const layer = layers.find(l => l.id === selectedLayerId);
+        if (!layer) return;
+        layer.clearKeyframes(selectedProperty);
+        selectedKeyframeId = null;
+        updateTimelineKeyframes();
+        updateAllLayersFromTime();
+    }
+    
+    // ==================== GRAVAÇÃO DE TELA COM ALTA QUALIDADE ====================
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    let recordingStream = null;
+    
+    async function startScreenRecording() {
+        if (isRecording) {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (recordingStream) {
+                recordingStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('recordScreenBtn').innerHTML = '<i data-lucide="monitor"></i> Gravar Tela';
+            document.getElementById('recordScreenBtn').classList.remove('recording');
+            document.getElementById('recordingBadge').style.display = 'none';
+            isRecording = false;
+            return;
+        }
+        
+        try {
+            const quality = document.getElementById('qualitySelect')?.value || 'medium';
+            let width, height, bitrate, frameRate;
+            
+            if (quality === 'high') {
+                width = 1920;
+                height = 1080;
+                bitrate = 8000000;
+                frameRate = 60;
+            } else if (quality === 'medium') {
+                width = 1280;
+                height = 720;
+                bitrate = 4000000;
+                frameRate = 30;
+            } else {
+                width = 854;
+                height = 480;
+                bitrate = 2000000;
+                frameRate = 30;
+            }
+            
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    displaySurface: "browser",
+                    logicalSurface: true,
+                    cursor: "always",
+                    width: { ideal: width, max: width },
+                    height: { ideal: height, max: height },
+                    frameRate: { ideal: frameRate, max: frameRate }
+                },
+                audio: false,
+                preferCurrentTab: true
+            });
+            
+            recordingStream = stream;
+            recordedChunks = [];
+            
+            // Usar codec VP9 para melhor qualidade
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
+                ? 'video/webm;codecs=vp9' 
+                : 'video/webm';
+            
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: mimeType,
+                videoBitsPerSecond: bitrate
+            });
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `screen_recording_${Date.now()}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                document.getElementById('recordScreenBtn').innerHTML = '<i data-lucide="monitor"></i> Gravar Tela';
+                document.getElementById('recordScreenBtn').classList.remove('recording');
+                document.getElementById('recordingBadge').style.display = 'none';
+                isRecording = false;
+            };
+            
+            mediaRecorder.start(1000);
+            isRecording = true;
+            document.getElementById('recordScreenBtn').innerHTML = '<i data-lucide="square"></i> Parar Gravação';
+            document.getElementById('recordScreenBtn').classList.add('recording');
+            document.getElementById('recordingBadge').style.display = 'block';
+            
+            const qualityNames = { high: 'HD', medium: 'SD', low: 'LD' };
+            document.getElementById('recordingBadge').innerHTML = `● GRAVANDO ${qualityNames[quality] || ''}`;
+            
+            stream.getVideoTracks()[0].onended = () => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            };
+            
+        } catch (err) {
+            console.error("Erro ao acessar tela:", err);
+            alert("Você cancelou ou ocorreu um erro. Para gravar, clique em 'Gravar Tela' e depois em 'Compartilhar' na janela que aparecer.");
+        }
+    }
+    
+    // ==================== INITIALIZATION ====================
+    function init() {
+        addTextLayer();
+        const textLayer = layers[0];
+        if (textLayer) {
+            textLayer.text = 'DOUBLE CLICK TO EDIT';
+            textLayer.updateTextContent();
+        }
+        
+        renderLayersList();
+        updateStage();
+        updateAllLayersFromTime();
+        drawCurvePreview();
+        updateBackground();
+        
+        document.getElementById('playPauseBtn').onclick = togglePlayPause;
+        document.getElementById('recordScreenBtn').onclick = startScreenRecording;
+        document.getElementById('timelineSlider').addEventListener('input', (e) => {
+            if (isPlaying) stopAnimation();
+            currentTime = (e.target.value / 100) * duration;
+            updateAllLayersFromTime();
+        });
+        document.getElementById('durationSlider').addEventListener('input', (e) => {
+            duration = parseFloat(e.target.value);
+            if (currentTime > duration) currentTime = 0;
+            updateAllLayersFromTime();
+        });
+        document.getElementById('timelineTrack').addEventListener('click', (e) => {
+            if (e.target.classList.contains('keyframe-marker')) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            if (isPlaying) stopAnimation();
+            currentTime = Math.min(duration, Math.max(0, percent * duration));
+            updateAllLayersFromTime();
+        });
+        
+        document.getElementById('addKeyframeBtn').onclick = addKeyframe;
+        document.getElementById('updateKeyframeBtn').onclick = updateKeyframe;
+        document.getElementById('removeKeyframeBtn').onclick = removeKeyframe;
+        document.getElementById('clearKeyframesBtn').onclick = clearAllKeyframes;
+        document.getElementById('addLayerBtn').onclick = showLayerMenu;
+        
+        document.getElementById('elementColor').addEventListener('input', (e) => {
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer) { layer.color = e.target.value; layer.updateColor(); layer.updateTransform(); }
+        });
+        document.getElementById('layerText').addEventListener('input', (e) => {
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer && layer.type === 'text') { layer.text = e.target.value; layer.updateTextContent(); }
+        });
+        document.getElementById('fontSelect').addEventListener('change', (e) => {
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer && layer.type === 'text') { layer.fontFamily = e.target.value; layer.updateTextContent(); }
+        });
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            bgColorValue = e.target.value;
+            updateBackground();
+        });
+        
+        const modal = document.getElementById('settingsModal');
+        document.getElementById('settingsBtn').onclick = () => modal.classList.add('active');
+        document.getElementById('closeSettingsBtn').onclick = () => modal.classList.remove('active');
+        document.getElementById('applySettingsBtn').onclick = () => {
+            duration = parseFloat(document.getElementById('modalDurationSec').value);
+            bgColorValue = document.getElementById('modalBgColor').value;
+            bgSolid = document.getElementById('modalBgSolid').checked;
+            document.getElementById('durationSlider').value = duration;
+            document.getElementById('durationValue').innerText = duration;
+            document.getElementById('bgColor').value = bgColorValue;
+            if (bgSolid) document.getElementById('bgSolidRadio').checked = true;
+            else document.getElementById('bgTransparentRadio').checked = true;
+            updateBackground();
+            if (currentTime > duration) currentTime = 0;
+            updateAllLayersFromTime();
+            modal.classList.remove('active');
+        };
+        
+        document.querySelectorAll('.property').forEach(prop => {
+            prop.addEventListener('click', () => {
+                selectedProperty = prop.getAttribute('data-prop');
+                selectedKeyframeId = null;
+                document.querySelectorAll('.property').forEach(p => p.classList.remove('active'));
+                prop.classList.add('active');
+                updatePropertySliders();
+                updateTimelineKeyframes();
+                drawCurvePreview();
+            });
+        });
+        
+        document.querySelectorAll('.easing-selector').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                e.stopPropagation();
+                const prop = sel.parentElement.getAttribute('data-prop');
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer) layer.easings[prop] = sel.value;
+                drawCurvePreview();
+            });
+        });
+        
+        lucide.createIcons();
+        
+        if (!document.getElementById('propertyControls')) {
+            const newDiv = document.createElement('div');
+            newDiv.id = 'propertyControls';
+            document.getElementById('propList').after(newDiv);
+        }
+    }
+    
+    init();
+</script>
+</body>
+</html>
